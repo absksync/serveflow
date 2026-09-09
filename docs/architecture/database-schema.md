@@ -242,3 +242,20 @@ restaurants
 orders
 │
 └── payments
+
+## table_sessions
+
+Stores customer occupancy sessions.
+
+Fields:
+
+- id
+- table_id
+- started_at
+- ended_at
+- session_status
+
+Statuses:
+
+- ACTIVE
+- CLOSED
