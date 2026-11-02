@@ -1,9 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+import { env } from "@/lib/env";
 
+/**
+ * Browser-side Supabase client.
+ *
+ * This client runs with the publishable key, so it is only as safe as the
+ * database's Row Level Security policies. Every table it touches must have
+ * RLS enabled (see database/migrations/).
+ */
 export const supabase = createClient(
-    supabaseUrl,
-    supabaseKey
+  env.supabaseUrl,
+  env.supabasePublishableKey,
 );
