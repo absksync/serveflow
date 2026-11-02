@@ -129,7 +129,7 @@ Payment --> Delivery[Delivery Workflow]
 </details>
 
 <details>
-<summary><strong>🚚 Delivery Automation</strong></summary>
+<summary><strong>🚚 Delivery Automation (Planned)</strong></summary>
 
 - Delivery request management
 - Delivery status tracking
@@ -141,10 +141,9 @@ Payment --> Delivery[Delivery Workflow]
 <details>
 <summary><strong>💳 Payments</strong></summary>
 
-- Cash payments
-- Card payments
-- UPI payments
-- Payment status tracking
+- Payment records for Cash / Card / UPI (database only)
+- Payment status tracking (database only)
+- Payment gateway integration (planned — not implemented)
 
 </details>
 
@@ -199,9 +198,9 @@ Supabase --> Automation
 | Styling | Tailwind CSS |
 | Database | PostgreSQL |
 | Backend Platform | Supabase |
-| Authentication | Supabase Auth |
+| Authentication | Supabase Auth (planned — DB is prepared, no login UI yet) |
 | Workflow Automation | n8n (Planned) |
-| Deployment | Vercel |
+| Deployment | Vercel (planned — not deployed) |
 | Version Control | Git + GitHub |
 
 ---
@@ -256,6 +255,8 @@ serveflow/
 │   └── next.config.ts
 │
 ├── database/
+│   ├── migrations/   # security hardening (RLS, pricing, customer RPCs)
+│   ├── tests/        # security regression tests (local PostgreSQL)
 │   └── sql/
 │       ├── 001_extensions.sql
 │       ├── 002_enums.sql
@@ -269,9 +270,9 @@ serveflow/
 │       ├── 010_service_requests.sql
 │       └── 011_payments.sql
 │
+├── backend/          # placeholder files only (all empty)
 ├── docs/
-│
-├── .github/
+│   └── AUDIT.md      # repo vs. handoff audit + security fixes
 │
 └── README.md
 ```
@@ -312,19 +313,20 @@ http://localhost:3000
 
 # Environment Variables
 
-Create:
-
-```text
-frontend/.env.local
+```bash
+cp frontend/.env.example frontend/.env.local
 ```
 
-Add:
+Fill in:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
+
+Use the **publishable** key only. Never put the secret / service_role key in a
+`NEXT_PUBLIC_` variable — it is shipped to every browser and bypasses Row Level
+Security. The app refuses to start if it detects one.
 
 ---
 
@@ -346,7 +348,20 @@ Open Supabase SQL Editor and execute scripts sequentially:
 011_payments.sql
 ```
 
-This will create the core database schema required for ServeFlow.
+Then apply the security migration (required — without it every table is
+publicly readable and writable with the publishable key):
+
+```text
+database/migrations/20261103000100_security_hardening.sql
+```
+
+`20261103000200_drop_staff_password_hash.sql` is optional and destructive; read
+its header first. To run the security tests against a disposable local
+PostgreSQL: `PGHOST=/tmp PGUSER=postgres database/tests/run.sh`.
+
+> The live Supabase database was built by hand in the SQL Editor and differs
+> from these files (e.g. it has no `branches` table). Compare with
+> `pg_dump --schema-only` before treating them as the source of truth.
 
 ---
 
@@ -375,7 +390,9 @@ git checkout -b feature/order-management
 ### Commit Changes
 
 ```bash
-git add .
+git status
+git diff
+git add path/to/changed/files   # never `git add .` blindly — it can pick up .env.local
 
 git commit -m "feat: implement order management module"
 ```
@@ -401,22 +418,23 @@ develop → main
 ### Project Foundation
 
 - [x] Repository Setup
-- [x] Git Workflow Setup
-- [x] Next.js Frontend Setup
-- [x] Supabase Integration
+- [ ] Git Workflow Setup (no `develop` branch yet)
+- [x] Next.js Frontend Setup (default starter page)
+- [ ] Supabase Integration (client configured, not yet used by any page)
 - [x] Database Schema Design
+- [x] Database security: RLS, tenant isolation, server-side pricing
 
-### Core Modules
+### Core Modules (database tables only — no UI or API yet)
 
 - [x] Restaurants
-- [x] Branches
-- [x] Users
+- [x] Branches (in repo SQL; not present in the live database)
+- [x] Staff Users
 - [x] Tables
 - [x] Sessions
 - [x] Menu
 - [x] Orders
 - [x] Service Requests
-- [x] Payments
+- [x] Payments (records only, no gateway)
 
 ### In Development
 
