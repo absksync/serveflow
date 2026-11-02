@@ -1,0 +1,3 @@
+-- staff_users is created in 003_restaurant_core_tables.sql. Intentionally empty.
+-- Authentication uses Supabase Auth (auth.users); see
+-- database/migrations/20261103000100_security_hardening.sql for the link.
