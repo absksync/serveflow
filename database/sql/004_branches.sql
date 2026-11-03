@@ -1,0 +1,1 @@
+-- branches is created in 003_restaurant_core_tables.sql. Intentionally empty.
